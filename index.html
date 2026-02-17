@@ -13,7 +13,9 @@
           <img src="logo.svg" alt="Demo Catalog" />
         </div>
       </div>
-      <div class="header-actions header-empty"></div>
+      <div class="header-actions">
+        <button class="header-cta" data-screen="production" type="button">Возможности</button>
+      </div>
     </header>
 
     <main class="main">
@@ -27,6 +29,7 @@
           </p>
           <div class="home-premium-shortcuts">
             <button class="premium-shortcut" data-screen="about" type="button">О демо</button>
+            <button class="premium-shortcut" data-screen="production" type="button">Возможности</button>
           </div>
           <div class="home-premium-actions">
             <button class="primary-button" data-screen="categories">Перейти в каталог</button>
@@ -297,18 +300,46 @@
         <div class="production-slider">
           <div id="productionTrack" class="production-track">
             <div class="production-slide production-slide-1">
-              <div class="production-slide-title">Готовый сценарий продаж</div>
-              <div class="production-slide-text">Каталог, карточка товара, корзина и заявка в одном Mini App.</div>
+              <div class="production-slide-kicker">Слайд 1/4</div>
+              <div class="production-slide-title">Путь клиента внутри Telegram</div>
+              <div class="production-slide-text">Пользователь проходит от просмотра каталога до отправки заявки в одном окне.</div>
             </div>
             <div class="production-slide production-slide-2">
-              <div class="production-slide-title">Быстрая адаптация под нишу</div>
-              <div class="production-slide-text">Категории, цены, тексты и интеграции меняются без переработки логики.</div>
+              <div class="production-slide-kicker">Слайд 2/4</div>
+              <div class="production-slide-title">Упаковка под нишу за короткий срок</div>
+              <div class="production-slide-text">Меняются тексты, категории, цены и брендинг без переписывания ядра.</div>
+            </div>
+            <div class="production-slide production-slide-3">
+              <div class="production-slide-kicker">Слайд 3/4</div>
+              <div class="production-slide-title">Интеграции и автоворонка</div>
+              <div class="production-slide-text">Заявки можно направлять в CRM, email или webhook для автоматической обработки.</div>
+            </div>
+            <div class="production-slide production-slide-4">
+              <div class="production-slide-kicker">Слайд 4/4</div>
+              <div class="production-slide-title">Рост конверсии и удобство</div>
+              <div class="production-slide-text">Меньше шагов до заявки и выше вероятность, что клиент завершит целевое действие.</div>
             </div>
           </div>
           <div class="production-dots">
             <button class="dot active" data-prod-dot="0" aria-label="Слайд 1"></button>
             <button class="dot" data-prod-dot="1" aria-label="Слайд 2"></button>
+            <button class="dot" data-prod-dot="2" aria-label="Слайд 3"></button>
+            <button class="dot" data-prod-dot="3" aria-label="Слайд 4"></button>
           </div>
+        </div>
+        <div class="presentation-grid">
+          <article class="presentation-card">
+            <div class="presentation-title">Что получает клиент</div>
+            <p>Готовый канал продаж в Telegram с понятным пользовательским сценарием и формой заявки.</p>
+          </article>
+          <article class="presentation-card">
+            <div class="presentation-title">Что получает бизнес</div>
+            <p>Структурированные лиды, удобную аналитику по товарам и быстрое масштабирование каталога.</p>
+          </article>
+          <article class="presentation-card">
+            <div class="presentation-title">Что получает отдел продаж</div>
+            <p>Заявки с заполненными контактами и составом корзины, готовые к обработке без ручного сбора данных.</p>
+          </article>
         </div>
         <div class="text-card">
           <div class="section-title">Сервисы</div>
