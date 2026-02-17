@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <title>Demo Catalog - Mini App</title>
+    <link rel="stylesheet" href="style.css?v=20260215-5" />
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-brand">
+        <div class="logo">
+          <img src="logo.svg" alt="Demo Catalog" />
+        </div>
+      </div>
+      <div class="header-actions header-empty"></div>
+    </header>
+
+    <main class="main">
+      <div id="dataStatus" class="data-status hidden"></div>
+      <section id="screen-home" class="screen active">
+        <section class="home-premium-hero">
+          <div class="home-premium-badge">DEMO MINI APP</div>
+          <button class="home-premium-title home-premium-title-link" data-screen="about" type="button">О демо</button>
+          <p class="home-premium-text">
+            Готовый пример Telegram Mini App: каталог, карточка товара, избранное, корзина и оформление заявки.
+          </p>
+          <div class="home-premium-shortcuts">
+            <button class="premium-shortcut" data-screen="about" type="button">О демо</button>
+            <button class="premium-shortcut" data-screen="production" type="button">Возможности</button>
+          </div>
+          <div class="home-premium-actions">
+            <button class="primary-button" data-screen="categories">Перейти в каталог</button>
+            <button class="ghost-button" data-screen="feedback">Оставить заявку</button>
+          </div>
+        </section>
+
+        <section class="home-trust">
+          <div class="trust-chip">Быстрый запуск</div>
+          <div class="trust-chip">Возможности</div>
+          <div class="trust-chip">Гибкая кастомизация</div>
+          <div class="trust-chip">Подписка на поддержку</div>
+        </section>
+
+        <button class="home-section-title home-section-title-link" data-screen="promo" type="button">Демо-акции</button>
+        <div class="promo-row promo-row-home">
+          <div id="promoTrack" class="promo-track"></div>
+        </div>
+
+        <div class="home-section-title">Каталог</div>
+        <div class="hero-grid hero-grid-inline hero-grid-premium">
+          <button class="hero-tile" data-group="equipment">
+            <div class="hero-image" data-image="equipment"></div>
+            <div class="hero-label">Блок 1: Каталоги 1-4</div>
+            <div class="hero-sub">Универсальные категории для демонстрации структуры каталога</div>
+          </button>
+          <button class="hero-tile" data-group="stainless">
+            <div class="hero-image" data-image="stainless"></div>
+            <div class="hero-label">Возможности</div>
+            <div class="hero-sub">Сценарий второго направления бизнеса в том же мини-аппе</div>
+          </button>
+        </div>
+
+      </section>
+
+      <section id="screen-categories" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2 id="categoriesTitle">Каталог</h2>
+        </div>
+        <div id="categoriesGrid" class="category-grid"></div>
+      </section>
+
+      <section id="screen-menu" class="screen">
+        <div class="screen-head menu-head"></div>
+        <nav class="menu-list">
+          <button id="menuCatalogToggle" class="menu-item">Каталог <span class="menu-caret">▾</span></button>
+          <div id="menuCatalogList" class="menu-sublist hidden">
+            <div class="menu-catalog-card">
+              <button class="menu-catalog-item" data-menu-index="0" data-category="catalog-1" data-has-children="0"><span>Каталог 1</span></button>
+              <button class="menu-catalog-item" data-menu-index="1" data-category="catalog-2" data-has-children="0"><span>Каталог 2</span></button>
+              <button class="menu-catalog-item" data-menu-index="2" data-category="catalog-3" data-has-children="0"><span>Каталог 3</span></button>
+              <button class="menu-catalog-item" data-menu-index="3" data-category="catalog-4" data-has-children="0"><span>Каталог 4</span></button>
+              <button class="menu-catalog-item" data-menu-index="4" data-category="catalog-5" data-has-children="0"><span>Каталог 5</span></button>
+              <button class="menu-catalog-item" data-menu-index="5" data-category="catalog-6" data-has-children="0"><span>Каталог 6</span></button>
+            </div>
+          </div>
+          <button data-screen="promo" class="menu-item">Акции</button>
+          <button data-screen="about" class="menu-item">О демо</button>
+          <button data-screen="production" class="menu-item">Возможности</button>
+          <button data-screen="payment" class="menu-item">Оплата и условия</button>
+          <button data-screen="contacts" class="menu-item">Контакты</button>
+        </nav>
+        <div class="menu-footer">
+          <div id="menuPhone" class="menu-phone">+7 (900) 000-00-00</div>
+          <div class="drawer-socials">
+            <a class="social-button" href="https://t.me" target="_blank" rel="noopener" aria-label="Telegram">
+              <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M22 4.01c0-.83-.76-1.37-1.54-1.07L3.02 9.62c-.98.37-.97 1.77.02 2.12l4.64 1.64 1.78 5.57c.22.7 1.07.96 1.63.51l2.65-2.1 4.82 3.52c.67.49 1.63.1 1.78-.74l2.64-14.83c.01-.06.02-.12.02-.18Zm-15.37 8.39 11.64-6.64-8.72 8.86-.44 3.3-1.43-4.48-4.59-1.04 3.54-1.99Z"/>
+              </svg>
+            </a>
+            <a class="social-button" href="https://wa.me/70000000000" target="_blank" rel="noopener" aria-label="WhatsApp">
+              <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M12 2a10 10 0 0 0-8.73 14.9L2 22l5.26-1.38A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.06-1.1l-.29-.17-3.12.82.83-3.03-.18-.3A8 8 0 1 1 12 20Zm4.57-5.13c-.25-.12-1.48-.73-1.71-.82-.23-.08-.4-.12-.57.12-.17.25-.65.82-.8.99-.15.17-.3.2-.55.08a6.57 6.57 0 0 1-1.93-1.19 7.22 7.22 0 0 1-1.33-1.65c-.14-.25 0-.38.11-.5.12-.12.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.36-.78-1.87-.2-.48-.4-.41-.57-.42h-.49c-.17 0-.45.06-.68.32-.23.25-.9.88-.9 2.14s.92 2.48 1.05 2.65c.12.17 1.81 2.77 4.39 3.88.61.26 1.09.42 1.46.54.61.2 1.17.17 1.61.1.49-.07 1.48-.6 1.69-1.18.21-.58.21-1.07.14-1.18-.06-.12-.23-.2-.48-.32Z"/>
+              </svg>
+            </a>
+            <a class="social-button" href="mailto:demo@example.com" aria-label="Email">
+              <svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2 8 5 8-5H4Zm0 10h16V10l-8 5-8-5v8Z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-products" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="categories" aria-label="Назад">←</button>
+          <h2 id="productsTitle">Категория</h2>
+        </div>
+        <div class="filter-bar filter-bar-sticky">
+          <input id="productsSearch" class="filter-input" type="search" placeholder="Поиск по названию" />
+          <select id="productsSort" class="filter-select">
+            <option value="default">По популярности</option>
+            <option value="price-asc">По цене</option>
+          </select>
+        </div>
+        <div id="productsList" class="product-list"></div>
+      </section>
+
+      <section id="screen-product" class="screen">
+        <div class="screen-head product-head">
+          <button class="back-button icon-only" data-back="products" aria-label="Назад">←</button>
+          <h2 id="productTitle"></h2>
+          <button id="productFavoriteTop" class="icon-only" aria-label="В избранное">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+            </svg>
+          </button>
+        </div>
+        <div id="productView" class="product-view"></div>
+      </section>
+
+      <section id="screen-favorites" class="screen">
+        <div class="screen-head">
+          <h2>Избранное</h2>
+        </div>
+        <div class="select-row">
+          <label class="check">
+            <input id="favoritesSelectAll" type="checkbox" />
+            <span>Выбрать все</span>
+          </label>
+          <div class="select-actions">
+            <button id="favoritesToCart" class="icon-btn" aria-label="В корзину">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m15 11-1 9" />
+                <path d="m19 11-4-7" />
+                <path d="M2 11h20" />
+                <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4" />
+              </svg>
+            </button>
+            <button id="favoritesClear" class="icon-btn" aria-label="Удалить">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M6 6l1 14h10l1-14" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="favoritesList" class="product-list"></div>
+      </section>
+
+      <section id="screen-cart" class="screen">
+        <div class="screen-head cart-head">
+          <h2>Корзина</h2>
+        </div>
+        <div class="select-row">
+          <label class="check">
+            <input id="cartSelectAll" type="checkbox" />
+            <span>Выбрать все</span>
+          </label>
+          <div class="select-actions">
+            <button id="cartRemoveSelected" class="icon-btn" aria-label="Удалить">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 6h18" />
+                <path d="M8 6V4h8v2" />
+                <path d="M6 6l1 14h10l1-14" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="cartList" class="cart-list"></div>
+        <div class="cart-summary-row">
+          <span>Итого</span>
+          <strong id="cartTotal">0 ₽</strong>
+        </div>
+        <button id="checkoutButton" class="primary-button cart-checkout-button" type="button">Оформить заказ</button>
+      </section>
+
+      <section id="screen-checkout" class="screen">
+        <div class="screen-head cart-head">
+          <button class="back-button icon-only" data-back="cart" aria-label="Назад">←</button>
+          <h2>Оформление заказа</h2>
+        </div>
+        <div class="cart-checkout">
+          <div class="section-title">Данные получателя</div>
+          <form id="orderForm" class="order-form flat">
+            <label>ФИО *<input id="inputName" type="text" required placeholder="Имя" /></label>
+            <label>Телефон *<input id="inputPhone" type="tel" required placeholder="+7" /></label>
+            <label>Email *<input id="inputEmail" type="email" required placeholder="name@mail.ru" /></label>
+            <label>Telegram ID<input id="inputTelegramId" type="text" readonly placeholder="Определится автоматически" /></label>
+            <label>Комментарий к заказу<input id="inputComment" type="text" placeholder="Комментарий" /></label>
+            <label>Способ связи
+              <select id="contactMethod">
+                <option value="telegram">Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="call">Звонок</option>
+              </select>
+            </label>
+            <label class="checkbox">
+              <input id="policyCheck" type="checkbox" />
+              <span>Согласен(а) с <a id="policyLink" href="#" target="_blank" rel="noopener">политикой конфиденциальности</a></span>
+            </label>
+            <div class="cart-totals">
+              <div><span>Товаров</span><strong id="cartItemsCount">0</strong></div>
+              <div><span>Итого</span><strong id="checkoutTotal">0 ₽</strong></div>
+            </div>
+            <div id="orderStatus" class="status"></div>
+            <button id="orderSubmit" class="primary-button" type="submit">Отправить заявку</button>
+            <button id="orderRetry" class="secondary-button hidden" type="button">Повторить</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="screen-confirmation" class="screen">
+        <div class="screen-head confirmation-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2>Заявка отправлена</h2>
+        </div>
+        <div class="confirmation">
+          <div class="confirmation-icon" aria-hidden="true">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 7 10 17l-6-6" />
+            </svg>
+          </div>
+          <div class="confirmation-title">Спасибо, заявку получили</div>
+          <p class="confirmation-text">Менеджер свяжется с вами в ближайшее время и уточнит детали заказа.</p>
+          <div class="confirmation-note">Если у части товаров цена по запросу, мы отдельно согласуем стоимость перед подтверждением.</div>
+          <div class="confirmation-actions">
+            <button class="primary-button" data-screen="home">Вернуться в каталог</button>
+            <button class="ghost-button" data-screen="orders">Открыть мои заказы</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-orders" class="screen">
+        <div class="screen-head">
+          <h2>Мои заказы</h2>
+        </div>
+        <div id="ordersList" class="orders-list"></div>
+      </section>
+
+      <section id="screen-about" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2>О демо</h2>
+        </div>
+        <div id="aboutText" class="text-card"></div>
+      </section>
+
+      <section id="screen-payment" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2>Оплата и условия</h2>
+        </div>
+        <div id="paymentText" class="text-card"></div>
+      </section>
+
+      <section id="screen-promo" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2>Акции</h2>
+        </div>
+        <div class="filter-bar filter-bar-sticky">
+          <select id="promoSort" class="filter-select">
+            <option value="default">Сортировка</option>
+            <option value="price-asc">Цена по возрастанию</option>
+          </select>
+        </div>
+        <div id="promoList" class="product-list"></div>
+      </section>
+
+      <section id="screen-production" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2>Возможности</h2>
+        </div>
+        <div id="productionText" class="text-card"></div>
+        <div class="production-slider">
+          <div id="productionTrack" class="production-track">
+            <img src="assets/production-1.jpg" alt="Производство металлоизделий" />
+            <img src="assets/production-2.jpg" alt="Лазерная резка металла" />
+          </div>
+          <div class="production-dots">
+            <button class="dot active" data-prod-dot="0" aria-label="Слайд 1"></button>
+            <button class="dot" data-prod-dot="1" aria-label="Слайд 2"></button>
+          </div>
+        </div>
+        <div class="text-card">
+          <div class="section-title">Сервисы</div>
+          <ul id="productionServices" class="production-list"></ul>
+        </div>
+      </section>
+
+      <section id="screen-contacts" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2>Контакты</h2>
+        </div>
+        <div id="contactsCard" class="text-card"></div>
+      </section>
+
+      <section id="screen-feedback" class="screen">
+        <div class="screen-head">
+          <button class="back-button icon-only" data-back="home" aria-label="Назад">←</button>
+          <h2>Обратная связь</h2>
+        </div>
+        <div class="feedback-card">
+          <div class="section-title">Связь с менеджером</div>
+          <p class="feedback-note">Оставьте заявку, и мы свяжемся с вами удобным способом.</p>
+          <form id="feedbackForm" class="order-form flat">
+            <label>Имя *<input id="feedbackName" type="text" required placeholder="Ваше имя" /></label>
+            <label>Телефон *<input id="feedbackPhone" type="tel" required placeholder="+7" /></label>
+            <label>Email<input id="feedbackEmail" type="email" placeholder="name@mail.ru" /></label>
+            <label>Предпочтительный способ связи
+              <select id="feedbackMethod">
+                <option value="phone">Телефон</option>
+                <option value="telegram">Telegram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="email">Email</option>
+              </select>
+            </label>
+            <label>Комментарий<input id="feedbackComment" type="text" placeholder="Коротко опишите вопрос" /></label>
+            <div id="feedbackStatus" class="status"></div>
+            <button class="primary-button" type="submit">Отправить</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button id="menuButton" class="bottom-item" type="button" aria-label="Меню">
+        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 5h16" />
+          <path d="M4 12h16" />
+          <path d="M4 19h16" />
+        </svg>
+        <span>Меню</span>
+      </button>
+      <button id="ordersButton" class="bottom-item" type="button" aria-label="Мои заказы">
+        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 3h6l1 2h4v4H4V5h4l1-2z" />
+          <path d="M4 9h16v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9z" />
+        </svg>
+        <span>Заказы</span>
+      </button>
+      <button id="cartButton" class="bottom-item bottom-center" type="button" aria-label="Корзина">
+        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m15 11-1 9" />
+          <path d="m19 11-4-7" />
+          <path d="M2 11h20" />
+          <path d="m3.5 11 1.6 7.4a2 2 0 0 0 2 1.6h9.8a2 2 0 0 0 2-1.6l1.7-7.4" />
+        </svg>
+        <span>Корзина</span>
+        <span id="cartCount" class="badge">0</span>
+      </button>
+      <button id="favoritesButton" class="bottom-item" type="button" aria-label="Избранное">
+        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5" />
+        </svg>
+        <span>Избранное</span>
+        <span id="favoritesCount" class="badge">0</span>
+      </button>
+      <button id="homeButton" class="bottom-item" type="button" aria-label="Главная">
+        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 11 12 3l9 8" />
+          <path d="M5 10v10h14V10" />
+        </svg>
+        <span>Главная</span>
+      </button>
+    </nav>
+
+    <script src="app.js?v=20260210-3"></script>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+[
+  {"id":"catalog-1","groupId":"equipment","title":"Каталог 1","image":"https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1200&q=70"},
+  {"id":"catalog-2","groupId":"equipment","title":"Каталог 2","image":"https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=1200&q=70"},
+  {"id":"catalog-3","groupId":"equipment","title":"Каталог 3","image":"https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=70"},
+  {"id":"catalog-4","groupId":"equipment","title":"Каталог 4","image":"https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=70"},
+  {"id":"catalog-5","groupId":"stainless","title":"Каталог 5","image":"https://images.unsplash.com/photo-1560472355-536de3962603?auto=format&fit=crop&w=1200&q=70"},
+  {"id":"catalog-6","groupId":"stainless","title":"Каталог 6","image":"https://images.unsplash.com/photo-1556740738-b6a63e27c4df?auto=format&fit=crop&w=1200&q=70"}
+]
