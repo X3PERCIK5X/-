@@ -541,7 +541,7 @@ function renderProductView() {
 }
 
 function renderFavorites() {
-  const list = Array.from(state.favorites).map((id) => getProduct(id) || ({ id, missing: true, title: 'Товар недоступен', shortDescription: '', images: ['assets/placeholder.png'] }));
+  const list = Array.from(state.favorites).map((id) => getProduct(id) || ({ id, missing: true, title: 'Товар недоступен', shortDescription: '', images: ['assets/placeholder.svg'] }));
   if (!state.selectedFavorites.size && list.length && !state.favoritesSelectionTouched) {
     state.selectedFavorites = new Set(list.map((p) => p.id));
     saveStorage();
@@ -782,7 +782,7 @@ function bindEvents() {
     productionSlider.addEventListener('touchend', (e) => {
       const dx = e.changedTouches[0].clientX - prodStartX;
       if (Math.abs(dx) < 40) return;
-      const totalSlides = document.querySelectorAll('.production-track img').length || 1;
+      const totalSlides = document.querySelectorAll('.production-track .production-slide').length || 1;
       const dir = dx < 0 ? 1 : -1;
       const next = Math.max(0, Math.min(totalSlides - 1, state.productionSlide + dir));
       if (next !== state.productionSlide) setProductionSlide(next);
