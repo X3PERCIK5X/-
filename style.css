@@ -1356,7 +1356,9 @@ img { max-width: 100%; display: block; }
 }
 
 .production-slide {
+  flex: 0 0 100%;
   width: 100%;
+  max-width: 100%;
   min-height: 220px;
   padding: 20px;
   color: #fff;
