@@ -91,7 +91,6 @@ const ui = {
   paymentText: document.getElementById('paymentText'),
   contactsCard: document.getElementById('contactsCard'),
   productionText: document.getElementById('productionText'),
-  productionServices: document.getElementById('productionServices'),
   productionTrack: document.getElementById('productionTrack'),
   promoTrack: document.getElementById('promoTrack'),
   promoList: document.getElementById('promoList'),
@@ -1276,10 +1275,6 @@ async function loadConfig() {
     } else {
       ui.productionText.innerHTML = formatMultiline(prodRaw);
     }
-  }
-  if (ui.productionServices) {
-    const list = state.config.productionServices || [];
-    ui.productionServices.innerHTML = list.map((item) => `<li>${item}</li>`).join('');
   }
   if (state.config.contactsText) {
     ui.contactsCard.innerHTML = formatMultiline(state.config.contactsText);

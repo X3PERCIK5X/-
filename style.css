@@ -1409,11 +1409,6 @@ img { max-width: 100%; display: block; }
   border-color: var(--primary);
 }
 
-.production-list {
-  display: grid;
-  gap: 6px;
-  padding-left: 16px;
-}
 
 .production-slide-kicker {
   font-size: 11px;
