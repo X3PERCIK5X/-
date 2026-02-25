@@ -1,362 +1,422 @@
-const DRAFT_KEY = 'demo_catalog_admin_draft_v1';
+const DRAFT_KEY = 'admin_catalog_v2_draft';
+const HOLD_MS = 5000;
 
 const state = {
   config: {},
   categories: [],
   products: [],
-  selectedProductId: null,
-  productSearch: '',
+  currentScreen: 'home',
+  currentCategoryId: null,
+  currentProductId: null,
 };
 
 const ui = {
-  status: document.getElementById('status'),
-  loadSourceBtn: document.getElementById('loadSourceBtn'),
+  screens: {
+    home: document.getElementById('screen-home'),
+    categories: document.getElementById('screen-categories'),
+    products: document.getElementById('screen-products'),
+    product: document.getElementById('screen-product'),
+    publish: document.getElementById('screen-publish'),
+  },
+  navButtons: Array.from(document.querySelectorAll('.bottom-item')),
   saveDraftBtn: document.getElementById('saveDraftBtn'),
-  resetDraftBtn: document.getElementById('resetDraftBtn'),
+  reloadBtn: document.getElementById('reloadBtn'),
+
   addBannerBtn: document.getElementById('addBannerBtn'),
   addArticleBtn: document.getElementById('addArticleBtn'),
+  addStoreBtn: document.getElementById('addStoreBtn'),
   addCategoryBtn: document.getElementById('addCategoryBtn'),
   addProductBtn: document.getElementById('addProductBtn'),
-  productSearch: document.getElementById('productSearch'),
+  addImageBtn: document.getElementById('addImageBtn'),
+  addSpecBtn: document.getElementById('addSpecBtn'),
+
   bannersList: document.getElementById('bannersList'),
   articlesList: document.getElementById('articlesList'),
-  categoriesList: document.getElementById('categoriesList'),
-  productsList: document.getElementById('productsList'),
-  productForm: document.getElementById('productForm'),
-  productCategorySelect: document.getElementById('productCategorySelect'),
+  storesList: document.getElementById('storesList'),
+  categoriesGrid: document.getElementById('categoriesGrid'),
+  productsGrid: document.getElementById('productsGrid'),
+  productsTitle: document.getElementById('productsTitle'),
+  productCard: document.getElementById('productCard'),
+
+  aboutPreview: document.getElementById('aboutPreview'),
+  productionPreview: document.getElementById('productionPreview'),
+  paymentPreview: document.getElementById('paymentPreview'),
+  contactsPreview: document.getElementById('contactsPreview'),
+
+  status: document.getElementById('status'),
   downloadConfigBtn: document.getElementById('downloadConfigBtn'),
   downloadCategoriesBtn: document.getElementById('downloadCategoriesBtn'),
   downloadProductsBtn: document.getElementById('downloadProductsBtn'),
   sendToBotBtn: document.getElementById('sendToBotBtn'),
-  readonlyAbout: document.getElementById('readonlyAbout'),
-  readonlyProduction: document.getElementById('readonlyProduction'),
-  readonlyPayment: document.getElementById('readonlyPayment'),
-  readonlyContacts: document.getElementById('readonlyContacts'),
+
+  editorModal: document.getElementById('editorModal'),
+  editorTitle: document.getElementById('editorTitle'),
+  editorInput: document.getElementById('editorInput'),
+  editorTextarea: document.getElementById('editorTextarea'),
+  editorCancel: document.getElementById('editorCancel'),
+  editorSave: document.getElementById('editorSave'),
 };
 
-function setStatus(text, isError = false) {
-  if (!ui.status) return;
+let editorSubmit = null;
+
+function setStatus(text, error = false) {
   ui.status.textContent = text;
-  ui.status.style.color = isError ? '#ff8a8a' : '#9ea8bf';
+  ui.status.style.color = error ? '#ff9f9f' : '#9aabcf';
+}
+
+function safe(v, fallback) {
+  try { return JSON.parse(v); } catch { return fallback; }
 }
 
 function uid(prefix) {
   return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function clone(v) {
-  return JSON.parse(JSON.stringify(v));
+function screen(name) {
+  state.currentScreen = name;
+  Object.entries(ui.screens).forEach(([k, el]) => el.classList.toggle('active', k === name));
+  ui.navButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.screen === name));
 }
 
-function parseLines(text) {
-  return String(text || '')
-    .split('\n')
-    .map((v) => v.trim())
-    .filter(Boolean);
+function openEditor({ title, value = '', multiline = false, onSave }) {
+  ui.editorTitle.textContent = title;
+  ui.editorInput.classList.toggle('hidden', multiline);
+  ui.editorTextarea.classList.toggle('hidden', !multiline);
+  if (multiline) {
+    ui.editorTextarea.value = value;
+    ui.editorTextarea.focus();
+  } else {
+    ui.editorInput.value = value;
+    ui.editorInput.focus();
+  }
+  editorSubmit = onSave;
+  ui.editorModal.classList.remove('hidden');
+  ui.editorModal.setAttribute('aria-hidden', 'false');
 }
 
-function renderReadonlyTexts() {
-  ui.readonlyAbout.value = state.config.aboutText || '';
-  ui.readonlyProduction.value = state.config.productionText || '';
-  ui.readonlyPayment.value = state.config.paymentText || '';
-  ui.readonlyContacts.value = state.config.contactsText || '';
+function closeEditor() {
+  editorSubmit = null;
+  ui.editorModal.classList.add('hidden');
+  ui.editorModal.setAttribute('aria-hidden', 'true');
 }
 
-function moveItem(arr, from, to) {
-  if (from < 0 || from >= arr.length || to < 0 || to >= arr.length || from === to) return;
-  const [item] = arr.splice(from, 1);
-  arr.splice(to, 0, item);
+function bindHold(el, cb) {
+  if (!el) return;
+  let timer = null;
+  const clear = () => {
+    if (timer) clearTimeout(timer);
+    timer = null;
+    el.classList.remove('hold-progress');
+  };
+
+  const start = (e) => {
+    if (e.type === 'mousedown' && e.button !== 0) return;
+    clear();
+    el.classList.add('hold-progress');
+    timer = setTimeout(() => {
+      el.classList.remove('hold-progress');
+      timer = null;
+      cb();
+    }, HOLD_MS);
+  };
+
+  el.addEventListener('mousedown', start);
+  el.addEventListener('touchstart', start, { passive: true });
+  ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach((ev) => el.addEventListener(ev, clear, { passive: true }));
 }
 
-function bindSwipeReorder(el, onLeft, onRight) {
-  let startX = 0;
-  el.addEventListener('touchstart', (e) => { startX = e.changedTouches?.[0]?.clientX || 0; }, { passive: true });
-  el.addEventListener('touchend', (e) => {
-    const endX = e.changedTouches?.[0]?.clientX || 0;
-    const dx = endX - startX;
-    if (Math.abs(dx) < 40) return;
-    if (dx < 0) onLeft();
-    else onRight();
-  }, { passive: true });
+function makeHoldEdit(el, { title, value, multiline = false, onSave }) {
+  el.classList.add('holdable');
+  bindHold(el, () => openEditor({ title, value: value(), multiline, onSave }));
 }
 
-function renderBanners() {
-  const list = Array.isArray(state.config.homeBanners) ? state.config.homeBanners : [];
+function excerpt(text) {
+  const clean = String(text || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return clean.length > 120 ? `${clean.slice(0, 120)}…` : clean;
+}
+
+function categoryById(id) {
+  return state.categories.find((c) => c.id === id);
+}
+
+function productById(id) {
+  return state.products.find((p) => p.id === id);
+}
+
+function renderHome() {
+  const banners = Array.isArray(state.config.homeBanners) ? state.config.homeBanners : [];
   ui.bannersList.innerHTML = '';
-  list.forEach((item, index) => {
-    const card = document.createElement('div');
-    card.className = 'item';
-    card.draggable = true;
-    card.dataset.index = String(index);
+  banners.forEach((b, i) => {
+    const card = document.createElement('article');
+    card.className = 'banner-card';
+    card.style.backgroundImage = `url('${b.image || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1400&q=70'}')`;
     card.innerHTML = `
-      <div class="head">
-        <div class="title">Баннер #${index + 1}</div>
-        <div class="mini-actions">
-          <button type="button" data-act="up">↑</button>
-          <button type="button" data-act="down">↓</button>
-          <button type="button" data-act="delete" class="danger">Удалить</button>
-        </div>
-      </div>
-      <div class="grid">
-        <label>ID<input data-field="id" value="${item.id || ''}" /></label>
-        <label>Стиль
-          <select data-field="style">
-            <option value="promo" ${item.style === 'promo' ? 'selected' : ''}>promo</option>
-            <option value="sales" ${item.style === 'sales' ? 'selected' : ''}>sales</option>
-          </select>
-        </label>
-        <label class="full">Kicker<input data-field="kicker" value="${item.kicker || ''}" /></label>
-        <label class="full">Заголовок<input data-field="title" value="${item.title || ''}" /></label>
-        <label class="full">Текст<textarea data-field="text" rows="2">${item.text || ''}</textarea></label>
-        <label class="full">CTA<input data-field="cta" value="${item.cta || ''}" /></label>
-      </div>
+      <span class="chip">${b.kicker || 'Баннер'}</span>
+      <h3>${b.title || 'Заголовок'}</h3>
+      <p>${b.text || ''}</p>
+      <small>${b.cta || ''}</small>
     `;
 
-    bindSwipeReorder(card, () => { moveItem(list, index, index + 1); renderBanners(); }, () => { moveItem(list, index, index - 1); renderBanners(); });
-
-    card.addEventListener('dragstart', (e) => e.dataTransfer?.setData('text/plain', String(index)));
-    card.addEventListener('dragover', (e) => e.preventDefault());
-    card.addEventListener('drop', (e) => {
-      e.preventDefault();
-      const from = Number(e.dataTransfer?.getData('text/plain'));
-      const to = index;
-      if (Number.isFinite(from)) {
-        moveItem(list, from, to);
-        renderBanners();
-      }
+    makeHoldEdit(card, {
+      title: `Баннер #${i + 1}: JSON`,
+      value: () => JSON.stringify(b, null, 2),
+      multiline: true,
+      onSave: (val) => {
+        const parsed = safe(val, null);
+        if (!parsed || typeof parsed !== 'object') return;
+        banners[i] = parsed;
+        renderHome();
+      },
     });
-
-    card.addEventListener('input', (e) => {
-      const target = e.target;
-      const field = target.dataset?.field;
-      if (!field) return;
-      list[index][field] = target.value;
-    });
-
-    card.addEventListener('click', (e) => {
-      const act = e.target.dataset?.act;
-      if (!act) return;
-      if (act === 'up') moveItem(list, index, index - 1);
-      if (act === 'down') moveItem(list, index, index + 1);
-      if (act === 'delete') list.splice(index, 1);
-      renderBanners();
-    });
-
     ui.bannersList.appendChild(card);
   });
-}
 
-function renderArticles() {
-  const list = Array.isArray(state.config.homeArticles) ? state.config.homeArticles : [];
+  const articles = Array.isArray(state.config.homeArticles) ? state.config.homeArticles : [];
   ui.articlesList.innerHTML = '';
-  list.forEach((item, index) => {
-    const card = document.createElement('div');
-    card.className = 'item';
+  articles.forEach((a, i) => {
+    const card = document.createElement('article');
+    card.className = 'article-card';
     card.innerHTML = `
-      <div class="head">
-        <div class="title">Статья #${index + 1}</div>
-        <div class="mini-actions">
-          <button type="button" data-act="up">↑</button>
-          <button type="button" data-act="down">↓</button>
-          <button type="button" data-act="delete" class="danger">Удалить</button>
-        </div>
-      </div>
-      <div class="grid">
-        <label>ID<input data-field="id" value="${item.id || ''}" /></label>
-        <label>Экран
-          <select data-field="screen">
-            ${['about', 'production', 'payment', 'contacts'].map((v) => `<option value="${v}" ${item.screen === v ? 'selected' : ''}>${v}</option>`).join('')}
-          </select>
-        </label>
-        <label class="full">Kicker<input data-field="kicker" value="${item.kicker || ''}" /></label>
-        <label class="full">Заголовок<input data-field="title" value="${item.title || ''}" /></label>
-        <label class="full">Текст<textarea data-field="text" rows="2">${item.text || ''}</textarea></label>
-      </div>
+      <span class="chip">${a.kicker || 'Статья'}</span>
+      <h3>${a.title || 'Без заголовка'}</h3>
+      <p>${a.text || ''}</p>
     `;
-
-    bindSwipeReorder(card, () => { moveItem(list, index, index + 1); renderArticles(); }, () => { moveItem(list, index, index - 1); renderArticles(); });
-
-    card.addEventListener('input', (e) => {
-      const target = e.target;
-      const field = target.dataset?.field;
-      if (!field) return;
-      list[index][field] = target.value;
+    makeHoldEdit(card, {
+      title: `Статья #${i + 1}: JSON`,
+      value: () => JSON.stringify(a, null, 2),
+      multiline: true,
+      onSave: (val) => {
+        const parsed = safe(val, null);
+        if (!parsed || typeof parsed !== 'object') return;
+        articles[i] = parsed;
+        renderHome();
+      },
     });
-
-    card.addEventListener('click', (e) => {
-      const act = e.target.dataset?.act;
-      if (!act) return;
-      if (act === 'up') moveItem(list, index, index - 1);
-      if (act === 'down') moveItem(list, index, index + 1);
-      if (act === 'delete') list.splice(index, 1);
-      renderArticles();
-    });
-
     ui.articlesList.appendChild(card);
+  });
+
+  const stores = Array.isArray(state.config.storeLocations) ? state.config.storeLocations : [];
+  ui.storesList.innerHTML = '';
+  stores.forEach((s, i) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'store-chip';
+    chip.textContent = `${s.city || 'Город'}: ${s.address || ''}`;
+    makeHoldEdit(chip, {
+      title: `Магазин #${i + 1}: JSON`,
+      value: () => JSON.stringify(s, null, 2),
+      multiline: true,
+      onSave: (val) => {
+        const parsed = safe(val, null);
+        if (!parsed || typeof parsed !== 'object') return;
+        stores[i] = parsed;
+        renderHome();
+      },
+    });
+    ui.storesList.appendChild(chip);
+  });
+
+  ui.aboutPreview.textContent = excerpt(state.config.aboutText);
+  ui.productionPreview.textContent = excerpt(state.config.productionText);
+  ui.paymentPreview.textContent = excerpt(state.config.paymentText);
+  ui.contactsPreview.textContent = excerpt(state.config.contactsText);
+
+  makeHoldEdit(document.getElementById('aboutBlock'), {
+    title: 'Редактировать aboutText',
+    value: () => state.config.aboutText || '',
+    multiline: true,
+    onSave: (v) => { state.config.aboutText = v; renderHome(); },
+  });
+  makeHoldEdit(document.getElementById('productionBlock'), {
+    title: 'Редактировать productionText',
+    value: () => state.config.productionText || '',
+    multiline: true,
+    onSave: (v) => { state.config.productionText = v; renderHome(); },
+  });
+  makeHoldEdit(document.getElementById('paymentBlock'), {
+    title: 'Редактировать paymentText',
+    value: () => state.config.paymentText || '',
+    multiline: true,
+    onSave: (v) => { state.config.paymentText = v; renderHome(); },
+  });
+  makeHoldEdit(document.getElementById('contactsBlock'), {
+    title: 'Редактировать contactsText',
+    value: () => state.config.contactsText || '',
+    multiline: true,
+    onSave: (v) => { state.config.contactsText = v; renderHome(); },
   });
 }
 
 function renderCategories() {
-  ui.categoriesList.innerHTML = '';
-  state.categories.forEach((item, index) => {
-    const card = document.createElement('div');
-    card.className = 'item';
+  ui.categoriesGrid.innerHTML = '';
+  state.categories.forEach((cat, idx) => {
+    const card = document.createElement('article');
+    card.className = 'category-card';
     card.innerHTML = `
-      <div class="head">
-        <div class="title">Раздел #${index + 1}</div>
-        <div class="mini-actions">
-          <button type="button" data-act="up">↑</button>
-          <button type="button" data-act="down">↓</button>
-          <button type="button" data-act="delete" class="danger">Удалить</button>
-        </div>
-      </div>
-      <div class="grid">
-        <label>ID<input data-field="id" value="${item.id || ''}" /></label>
-        <label>groupId<input data-field="groupId" value="${item.groupId || ''}" /></label>
-        <label class="full">Название<input data-field="title" value="${item.title || ''}" /></label>
-        <label class="full">Картинка (URL)<input data-field="image" value="${item.image || ''}" /></label>
-      </div>
+      <img class="category-cover" src="${cat.image || 'assets/placeholder.svg'}" alt="${cat.title || ''}" />
+      <h3 class="category-title">${cat.title || 'Без названия'}</h3>
     `;
 
-    card.addEventListener('input', (e) => {
-      const target = e.target;
-      const field = target.dataset?.field;
-      if (!field) return;
-      state.categories[index][field] = target.value;
-      if (field === 'title' || field === 'id') renderProductCategoryOptions();
+    const img = card.querySelector('.category-cover');
+    const title = card.querySelector('.category-title');
+
+    makeHoldEdit(img, {
+      title: `Категория ${cat.title || idx + 1}: URL картинки`,
+      value: () => cat.image || '',
+      onSave: (v) => { cat.image = v.trim(); renderCategories(); },
     });
 
-    card.addEventListener('click', (e) => {
-      const act = e.target.dataset?.act;
-      if (!act) return;
-      if (act === 'up') moveItem(state.categories, index, index - 1);
-      if (act === 'down') moveItem(state.categories, index, index + 1);
-      if (act === 'delete') state.categories.splice(index, 1);
-      renderCategories();
-      renderProductCategoryOptions();
+    makeHoldEdit(title, {
+      title: `Категория ${cat.title || idx + 1}: заголовок`,
+      value: () => cat.title || '',
+      onSave: (v) => { cat.title = v.trim(); renderCategories(); },
     });
 
-    bindSwipeReorder(card, () => { moveItem(state.categories, index, index + 1); renderCategories(); }, () => { moveItem(state.categories, index, index - 1); renderCategories(); });
-    ui.categoriesList.appendChild(card);
+    card.addEventListener('click', () => {
+      state.currentCategoryId = cat.id;
+      renderProducts();
+      screen('products');
+    });
+
+    ui.categoriesGrid.appendChild(card);
   });
 }
 
-function getFilteredProducts() {
-  const q = String(state.productSearch || '').trim().toLowerCase();
-  if (!q) return state.products;
-  return state.products.filter((p) => String(p.title || '').toLowerCase().includes(q) || String(p.id || '').toLowerCase().includes(q));
-}
+function renderProducts() {
+  const category = categoryById(state.currentCategoryId) || state.categories[0] || null;
+  if (!category) {
+    ui.productsTitle.textContent = 'Товары';
+    ui.productsGrid.innerHTML = '';
+    return;
+  }
+  state.currentCategoryId = category.id;
+  ui.productsTitle.textContent = `Товары: ${category.title}`;
 
-function renderProductsList() {
-  const list = getFilteredProducts();
-  ui.productsList.innerHTML = '';
-  list.forEach((item) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `product-row ${state.selectedProductId === item.id ? 'active' : ''}`;
-    btn.textContent = `${item.title || '(без названия)'} · ${item.id || ''}`;
-    btn.addEventListener('click', () => {
-      state.selectedProductId = item.id;
-      renderProductsList();
-      fillProductForm();
+  const list = state.products.filter((p) => p.categoryId === category.id);
+  ui.productsGrid.innerHTML = '';
+
+  list.forEach((p) => {
+    const card = document.createElement('article');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <img src="${p.images?.[0] || 'assets/placeholder.svg'}" alt="${p.title || ''}" />
+      <h3>${p.title || 'Без названия'}</h3>
+      <p>${p.shortDescription || ''}</p>
+      <div class="product-price">${Number(p.price || 0).toLocaleString('ru-RU')} ₽</div>
+    `;
+
+    const image = card.querySelector('img');
+    const h3 = card.querySelector('h3');
+    const desc = card.querySelector('p');
+    const price = card.querySelector('.product-price');
+
+    makeHoldEdit(image, {
+      title: `${p.title}: URL фото`,
+      value: () => p.images?.[0] || '',
+      onSave: (v) => { p.images = [v.trim(), ...(p.images || []).slice(1)]; renderProducts(); },
     });
-    ui.productsList.appendChild(btn);
+
+    makeHoldEdit(h3, {
+      title: `${p.id}: заголовок`,
+      value: () => p.title || '',
+      onSave: (v) => { p.title = v.trim(); renderProducts(); },
+    });
+
+    makeHoldEdit(desc, {
+      title: `${p.id}: краткое описание`,
+      value: () => p.shortDescription || '',
+      onSave: (v) => { p.shortDescription = v; renderProducts(); },
+    });
+
+    makeHoldEdit(price, {
+      title: `${p.id}: цена`,
+      value: () => String(p.price || 0),
+      onSave: (v) => { p.price = Number(v) || 0; renderProducts(); },
+    });
+
+    card.addEventListener('click', () => {
+      state.currentProductId = p.id;
+      renderProduct();
+      screen('product');
+    });
+
+    ui.productsGrid.appendChild(card);
   });
 }
 
-function renderProductCategoryOptions() {
-  const current = ui.productCategorySelect.value;
-  ui.productCategorySelect.innerHTML = state.categories
-    .map((c) => `<option value="${c.id}">${c.title || c.id}</option>`)
-    .join('');
-  if (current) ui.productCategorySelect.value = current;
-}
-
-function fillProductForm() {
-  const form = ui.productForm;
-  const p = state.products.find((x) => x.id === state.selectedProductId);
+function renderProduct() {
+  const p = productById(state.currentProductId);
   if (!p) {
-    form.reset();
-    return;
-  }
-  form.id.value = p.id || '';
-  form.categoryId.value = p.categoryId || '';
-  form.sku.value = p.sku || '';
-  form.badge.value = p.badge || '';
-  form.title.value = p.title || '';
-  form.shortDescription.value = p.shortDescription || '';
-  form.description.value = p.description || '';
-  form.price.value = Number(p.price || 0);
-  form.oldPrice.value = Number(p.oldPrice || 0);
-  form.discountPercent.value = Number(p.discountPercent || 0);
-  form.imagesText.value = Array.isArray(p.images) ? p.images.join('\n') : '';
-  form.specsText.value = Array.isArray(p.specs) ? p.specs.join('\n') : '';
-  form.tagsText.value = Array.isArray(p.tags) ? p.tags.join(', ') : '';
-}
-
-function saveCurrentProductFromForm() {
-  const form = ui.productForm;
-  const idx = state.products.findIndex((x) => x.id === state.selectedProductId);
-  if (idx < 0) {
-    setStatus('Сначала выберите товар.', true);
+    ui.productCard.innerHTML = '<p>Товар не выбран.</p>';
     return;
   }
 
-  const next = {
-    ...state.products[idx],
-    id: String(form.id.value || '').trim(),
-    categoryId: String(form.categoryId.value || '').trim(),
-    sku: String(form.sku.value || '').trim(),
-    badge: String(form.badge.value || '').trim(),
-    title: String(form.title.value || '').trim(),
-    shortDescription: String(form.shortDescription.value || '').trim(),
-    description: String(form.description.value || '').trim(),
-    price: Number(form.price.value || 0),
-    oldPrice: Number(form.oldPrice.value || 0),
-    discountPercent: Number(form.discountPercent.value || 0),
-    images: parseLines(form.imagesText.value),
-    specs: parseLines(form.specsText.value),
-    tags: String(form.tagsText.value || '').split(',').map((v) => v.trim()).filter(Boolean),
-  };
+  const images = Array.isArray(p.images) ? p.images : [];
+  const specs = Array.isArray(p.specs) ? p.specs : [];
 
-  if (!next.id || !next.title || !next.categoryId) {
-    setStatus('ID, название и категория обязательны.', true);
-    return;
-  }
+  ui.productCard.innerHTML = `
+    <div class="gallery">
+      ${images.map((src, i) => `<img class="js-img" data-index="${i}" src="${src || 'assets/placeholder.svg'}" alt="img-${i}" />`).join('')}
+    </div>
+    <h3 class="js-title">${p.title || ''}</h3>
+    <div class="meta js-short">${p.shortDescription || ''}</div>
+    <div class="product-price js-price">${Number(p.price || 0).toLocaleString('ru-RU')} ₽</div>
+    <p class="js-desc">${p.description || ''}</p>
+    <h4>Характеристики</h4>
+    <ul class="spec-list">
+      ${specs.map((s, i) => `<li class="js-spec" data-index="${i}">${s}</li>`).join('')}
+    </ul>
+  `;
 
-  if (next.id !== state.selectedProductId && state.products.some((x) => x.id === next.id)) {
-    setStatus('Товар с таким ID уже есть.', true);
-    return;
-  }
+  ui.productCard.querySelectorAll('.js-img').forEach((el) => {
+    const i = Number(el.dataset.index || 0);
+    makeHoldEdit(el, {
+      title: `${p.id}: URL фото #${i + 1}`,
+      value: () => p.images?.[i] || '',
+      onSave: (v) => {
+        p.images[i] = v.trim();
+        renderProduct();
+      },
+    });
+  });
 
-  state.products[idx] = next;
-  state.selectedProductId = next.id;
-  renderProductsList();
-  setStatus('Товар сохранен в памяти админки.');
-}
+  makeHoldEdit(ui.productCard.querySelector('.js-title'), {
+    title: `${p.id}: заголовок`,
+    value: () => p.title || '',
+    onSave: (v) => { p.title = v.trim(); renderProduct(); renderProducts(); },
+  });
 
-function addProduct() {
-  const id = uid('product');
-  const categoryId = state.categories[0]?.id || '';
-  const item = {
-    id,
-    title: 'Новый товар',
-    price: 0,
-    sku: '',
-    shortDescription: '',
-    description: '',
-    specs: [],
-    images: [''],
-    categoryId,
-    oldPrice: 0,
-    discountPercent: 0,
-    badge: '',
-    tags: [],
-  };
-  state.products.unshift(item);
-  state.selectedProductId = id;
-  renderProductsList();
-  fillProductForm();
+  makeHoldEdit(ui.productCard.querySelector('.js-short'), {
+    title: `${p.id}: короткий текст`,
+    value: () => p.shortDescription || '',
+    multiline: true,
+    onSave: (v) => { p.shortDescription = v; renderProduct(); renderProducts(); },
+  });
+
+  makeHoldEdit(ui.productCard.querySelector('.js-price'), {
+    title: `${p.id}: цена`,
+    value: () => String(p.price || 0),
+    onSave: (v) => { p.price = Number(v) || 0; renderProduct(); renderProducts(); },
+  });
+
+  makeHoldEdit(ui.productCard.querySelector('.js-desc'), {
+    title: `${p.id}: описание`,
+    value: () => p.description || '',
+    multiline: true,
+    onSave: (v) => { p.description = v; renderProduct(); },
+  });
+
+  ui.productCard.querySelectorAll('.js-spec').forEach((el) => {
+    const i = Number(el.dataset.index || 0);
+    makeHoldEdit(el, {
+      title: `${p.id}: характеристика #${i + 1}`,
+      value: () => p.specs?.[i] || '',
+      onSave: (v) => {
+        p.specs[i] = v;
+        renderProduct();
+      },
+    });
+  });
 }
 
 function addBanner() {
@@ -364,24 +424,31 @@ function addBanner() {
   state.config.homeBanners.push({
     id: uid('banner'),
     style: 'promo',
+    image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=1400&q=70',
     kicker: 'Новый баннер',
-    title: 'Заголовок',
-    text: 'Описание предложения',
+    title: 'Новый заголовок',
+    text: 'Текст баннера',
     cta: 'Подробнее',
   });
-  renderBanners();
+  renderHome();
 }
 
 function addArticle() {
   if (!Array.isArray(state.config.homeArticles)) state.config.homeArticles = [];
   state.config.homeArticles.push({
     id: uid('article'),
-    kicker: 'Новый раздел',
-    title: 'Заголовок',
-    text: 'Краткое описание',
+    kicker: 'Новая статья',
+    title: 'Заголовок статьи',
+    text: 'Короткий текст статьи',
     screen: 'about',
   });
-  renderArticles();
+  renderHome();
+}
+
+function addStore() {
+  if (!Array.isArray(state.config.storeLocations)) state.config.storeLocations = [];
+  state.config.storeLocations.push({ id: uid('store'), city: 'Новый город', address: 'Новый адрес' });
+  renderHome();
 }
 
 function addCategory() {
@@ -389,10 +456,58 @@ function addCategory() {
     id: uid('catalog'),
     groupId: 'custom',
     title: 'Новый раздел',
-    image: '',
+    image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=70',
   });
   renderCategories();
-  renderProductCategoryOptions();
+}
+
+function addProduct() {
+  const categoryId = state.currentCategoryId || state.categories[0]?.id || '';
+  if (!categoryId) {
+    setStatus('Сначала добавьте категорию.', true);
+    return;
+  }
+  const p = {
+    id: uid('product'),
+    title: 'Новый товар',
+    price: 0,
+    sku: '',
+    shortDescription: 'Короткий текст',
+    description: 'Описание',
+    specs: ['Характеристика'],
+    images: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=70'],
+    categoryId,
+  };
+  state.products.unshift(p);
+  renderProducts();
+}
+
+function addImage() {
+  const p = productById(state.currentProductId);
+  if (!p) return;
+  if (!Array.isArray(p.images)) p.images = [];
+  p.images.push('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=70');
+  renderProduct();
+}
+
+function addSpec() {
+  const p = productById(state.currentProductId);
+  if (!p) return;
+  if (!Array.isArray(p.specs)) p.specs = [];
+  p.specs.push('Новая характеристика');
+  renderProduct();
+}
+
+function downloadFile(name, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 function saveDraft() {
@@ -401,127 +516,105 @@ function saveDraft() {
     categories: state.categories,
     products: state.products,
   }));
-  setStatus('Черновик сохранен локально.');
+  setStatus('Черновик сохранен.');
 }
 
-function downloadFile(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-async function loadFromFiles() {
+async function loadSource() {
   try {
-    const [configRes, categoriesRes, productsRes] = await Promise.all([
+    const [cfgRes, catRes, prodRes] = await Promise.all([
       fetch('config.json', { cache: 'no-store' }),
       fetch('data/categories.json', { cache: 'no-store' }),
       fetch('data/products.json', { cache: 'no-store' }),
     ]);
-    state.config = await configRes.json();
-    state.categories = await categoriesRes.json();
-    state.products = await productsRes.json();
+    state.config = await cfgRes.json();
+    state.categories = await catRes.json();
+    state.products = await prodRes.json();
 
-    if (!Array.isArray(state.config.homeBanners)) state.config.homeBanners = [];
-    if (!Array.isArray(state.config.homeArticles)) state.config.homeArticles = [];
+    state.currentCategoryId = state.categories[0]?.id || null;
+    state.currentProductId = state.products[0]?.id || null;
 
-    state.selectedProductId = state.products[0]?.id || null;
-    renderAll();
-    setStatus('Данные загружены из файлов проекта.');
-  } catch (err) {
-    console.error(err);
-    setStatus('Ошибка загрузки исходных файлов.', true);
+    renderHome();
+    renderCategories();
+    renderProducts();
+    renderProduct();
+    setStatus('Данные загружены из файлов.');
+  } catch (e) {
+    console.error(e);
+    setStatus('Ошибка загрузки данных.', true);
   }
 }
 
 function loadDraftOrSource() {
   const raw = localStorage.getItem(DRAFT_KEY);
-  if (!raw) return loadFromFiles();
+  if (!raw) {
+    loadSource();
+    return;
+  }
   try {
     const draft = JSON.parse(raw);
     state.config = draft.config || {};
     state.categories = Array.isArray(draft.categories) ? draft.categories : [];
     state.products = Array.isArray(draft.products) ? draft.products : [];
-    state.selectedProductId = state.products[0]?.id || null;
-    renderAll();
+    state.currentCategoryId = state.categories[0]?.id || null;
+    state.currentProductId = state.products[0]?.id || null;
+
+    renderHome();
+    renderCategories();
+    renderProducts();
+    renderProduct();
     setStatus('Загружен локальный черновик.');
   } catch {
-    loadFromFiles();
+    loadSource();
   }
 }
 
-function renderAll() {
-  renderBanners();
-  renderArticles();
-  renderCategories();
-  renderProductCategoryOptions();
-  renderProductsList();
-  fillProductForm();
-  renderReadonlyTexts();
-}
-
 function bind() {
-  ui.loadSourceBtn.addEventListener('click', loadFromFiles);
+  ui.navButtons.forEach((btn) => btn.addEventListener('click', () => {
+    screen(btn.dataset.screen);
+    if (btn.dataset.screen === 'products') renderProducts();
+  }));
+
   ui.saveDraftBtn.addEventListener('click', saveDraft);
-  ui.resetDraftBtn.addEventListener('click', () => {
-    localStorage.removeItem(DRAFT_KEY);
-    loadFromFiles();
-  });
+  ui.reloadBtn.addEventListener('click', loadSource);
 
   ui.addBannerBtn.addEventListener('click', addBanner);
   ui.addArticleBtn.addEventListener('click', addArticle);
+  ui.addStoreBtn.addEventListener('click', addStore);
   ui.addCategoryBtn.addEventListener('click', addCategory);
   ui.addProductBtn.addEventListener('click', addProduct);
-
-  ui.productSearch.addEventListener('input', () => {
-    state.productSearch = ui.productSearch.value;
-    renderProductsList();
-  });
-
-  ui.productForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    saveCurrentProductFromForm();
-  });
-
-  document.getElementById('deleteProductBtn').addEventListener('click', () => {
-    const idx = state.products.findIndex((x) => x.id === state.selectedProductId);
-    if (idx < 0) return;
-    state.products.splice(idx, 1);
-    state.selectedProductId = state.products[0]?.id || null;
-    renderProductsList();
-    fillProductForm();
-    setStatus('Товар удален.');
-  });
+  ui.addImageBtn.addEventListener('click', addImage);
+  ui.addSpecBtn.addEventListener('click', addSpec);
 
   ui.downloadConfigBtn.addEventListener('click', () => downloadFile('config.json', state.config));
   ui.downloadCategoriesBtn.addEventListener('click', () => downloadFile('categories.json', state.categories));
   ui.downloadProductsBtn.addEventListener('click', () => downloadFile('products.json', state.products));
 
   ui.sendToBotBtn.addEventListener('click', () => {
-    const payload = {
-      type: 'admin_export_meta',
-      updatedAt: new Date().toISOString(),
-      stats: {
-        banners: (state.config.homeBanners || []).length,
-        articles: (state.config.homeArticles || []).length,
-        categories: state.categories.length,
-        products: state.products.length,
-      },
-      note: 'Полный JSON скачайте кнопками и загрузите в репозиторий.',
-    };
-
     const tg = window.Telegram?.WebApp;
     if (!tg || typeof tg.sendData !== 'function') {
-      setStatus('Открывайте админку из Telegram, чтобы отправить данные в бота.', true);
+      setStatus('Откройте внутри Telegram для отправки сводки.', true);
       return;
     }
-    tg.sendData(JSON.stringify(payload));
-    setStatus('В бот отправлена сводка. Полные JSON скачайте отдельно.');
+    tg.sendData(JSON.stringify({
+      type: 'admin_export_meta',
+      updatedAt: new Date().toISOString(),
+      banners: (state.config.homeBanners || []).length,
+      articles: (state.config.homeArticles || []).length,
+      categories: state.categories.length,
+      products: state.products.length,
+    }));
+    setStatus('Сводка отправлена в бота.');
+  });
+
+  ui.editorCancel.addEventListener('click', closeEditor);
+  ui.editorModal.addEventListener('click', (e) => {
+    if (e.target === ui.editorModal) closeEditor();
+  });
+  ui.editorSave.addEventListener('click', () => {
+    if (!editorSubmit) return closeEditor();
+    const val = ui.editorTextarea.classList.contains('hidden') ? ui.editorInput.value : ui.editorTextarea.value;
+    editorSubmit(val);
+    closeEditor();
   });
 }
 

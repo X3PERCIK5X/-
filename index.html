@@ -2,114 +2,130 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Админ каталог Mini App</title>
-    <link rel="stylesheet" href="admin.css?v=20260225-1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+    <title>Админ каталог</title>
+    <link rel="stylesheet" href="admin.css?v=20260225-2" />
   </head>
   <body>
-    <header class="admin-header">
-      <div>
-        <h1>Админ каталог</h1>
-        <p>Управление контентом для «Демо Каталог Лайт Мини Апп»</p>
+    <header class="topbar">
+      <div class="brand">
+        <strong>ADMIN CATALOG</strong>
+        <small>Удержание 5 сек = редактирование</small>
       </div>
-      <div class="header-actions">
-        <button id="loadSourceBtn" type="button">Загрузить из файлов</button>
-        <button id="saveDraftBtn" type="button">Сохранить черновик</button>
-        <button id="resetDraftBtn" type="button" class="ghost">Сбросить черновик</button>
+      <div class="top-actions">
+        <button id="saveDraftBtn" class="btn ghost" type="button">Черновик</button>
+        <button id="reloadBtn" class="btn ghost" type="button">Обновить</button>
       </div>
     </header>
 
-    <main class="admin-main">
-      <section class="card">
-        <div class="card-head">
-          <h2>Баннеры главной</h2>
-          <button id="addBannerBtn" type="button">+ Баннер</button>
+    <main class="main">
+      <section id="screen-home" class="screen active">
+        <div class="section-head">
+          <h2>Баннеры</h2>
+          <button id="addBannerBtn" class="plus-btn" type="button">＋</button>
         </div>
-        <p class="hint">Перетаскивайте мышью или свайпайте карточку влево/вправо для смены порядка.</p>
-        <div id="bannersList" class="list"></div>
+        <div id="bannersList" class="banner-list"></div>
+
+        <div class="section-head">
+          <h2>Статьи</h2>
+          <button id="addArticleBtn" class="plus-btn" type="button">＋</button>
+        </div>
+        <div id="articlesList" class="article-list"></div>
+
+        <div class="section-head">
+          <h2>Магазины</h2>
+          <button id="addStoreBtn" class="plus-btn" type="button">＋</button>
+        </div>
+        <div id="storesList" class="chip-list"></div>
+
+        <div class="section-head">
+          <h2>Основные текстовые блоки</h2>
+        </div>
+        <div class="article-list">
+          <article class="article-card holdable" id="aboutBlock" data-edit-kind="multiline" data-edit-label="aboutText">
+            <span class="chip">about</span>
+            <h3>О продукте</h3>
+            <p id="aboutPreview"></p>
+          </article>
+          <article class="article-card holdable" id="productionBlock" data-edit-kind="multiline" data-edit-label="productionText">
+            <span class="chip">production</span>
+            <h3>Механика</h3>
+            <p id="productionPreview"></p>
+          </article>
+          <article class="article-card holdable" id="paymentBlock" data-edit-kind="multiline" data-edit-label="paymentText">
+            <span class="chip">payment</span>
+            <h3>Оплата и условия</h3>
+            <p id="paymentPreview"></p>
+          </article>
+          <article class="article-card holdable" id="contactsBlock" data-edit-kind="multiline" data-edit-label="contactsText">
+            <span class="chip">contacts</span>
+            <h3>Контакты</h3>
+            <p id="contactsPreview"></p>
+          </article>
+        </div>
       </section>
 
-      <section class="card">
-        <div class="card-head">
-          <h2>Статьи главной</h2>
-          <button id="addArticleBtn" type="button">+ Статья</button>
+      <section id="screen-categories" class="screen">
+        <div class="section-head">
+          <h2>Каталог</h2>
+          <button id="addCategoryBtn" class="plus-btn" type="button">＋</button>
         </div>
-        <div id="articlesList" class="list"></div>
+        <div id="categoriesGrid" class="category-grid"></div>
       </section>
 
-      <section class="card">
-        <div class="card-head">
-          <h2>Каталог и подкаталоги</h2>
-          <button id="addCategoryBtn" type="button">+ Раздел</button>
+      <section id="screen-products" class="screen">
+        <div class="section-head">
+          <h2 id="productsTitle">Товары</h2>
+          <button id="addProductBtn" class="plus-btn" type="button">＋</button>
         </div>
-        <div id="categoriesList" class="list"></div>
+        <div id="productsGrid" class="product-grid"></div>
       </section>
 
-      <section class="card">
-        <div class="card-head">
-          <h2>Карточки товаров</h2>
-          <div class="card-actions">
-            <input id="productSearch" type="search" placeholder="Поиск по названию / id" />
-            <button id="addProductBtn" type="button">+ Товар</button>
+      <section id="screen-product" class="screen">
+        <div class="section-head">
+          <h2>Карточка товара</h2>
+          <div class="inline-actions">
+            <button id="addImageBtn" class="plus-btn" type="button">＋ Фото</button>
+            <button id="addSpecBtn" class="plus-btn" type="button">＋ Характеристика</button>
           </div>
         </div>
-        <div class="products-layout">
-          <aside id="productsList" class="products-list"></aside>
-          <form id="productForm" class="product-form">
-            <div class="form-grid">
-              <label>ID<input name="id" required /></label>
-              <label>Категория<select name="categoryId" id="productCategorySelect" required></select></label>
-              <label>Артикул<input name="sku" /></label>
-              <label>Бейдж<input name="badge" placeholder="NEW / SALE" /></label>
-
-              <label>Название<input name="title" required /></label>
-              <label>Краткое описание<input name="shortDescription" /></label>
-              <label class="full">Описание<textarea name="description" rows="3"></textarea></label>
-
-              <label>Цена<input name="price" type="number" min="0" step="1" /></label>
-              <label>Старая цена<input name="oldPrice" type="number" min="0" step="1" /></label>
-              <label>Скидка %<input name="discountPercent" type="number" min="0" max="100" step="1" /></label>
-
-              <label class="full">Фото (по 1 URL на строку)<textarea name="imagesText" rows="4"></textarea></label>
-              <label class="full">Характеристики (по 1 пункту на строку)<textarea name="specsText" rows="5"></textarea></label>
-              <label class="full">Теги (через запятую)<input name="tagsText" /></label>
-            </div>
-            <div class="form-actions">
-              <button id="saveProductBtn" type="submit">Сохранить</button>
-              <button id="deleteProductBtn" type="button" class="danger">Удалить</button>
-            </div>
-          </form>
-        </div>
+        <div id="productCard" class="product-full"></div>
       </section>
 
-      <section class="card">
-        <div class="card-head">
-          <h2>Основные тексты (заблокировано)</h2>
-        </div>
-        <p class="hint">По ТЗ эти поля нельзя менять из админки.</p>
-        <div class="readonly-grid">
-          <label>aboutText<textarea id="readonlyAbout" rows="5" readonly></textarea></label>
-          <label>productionText<textarea id="readonlyProduction" rows="5" readonly></textarea></label>
-          <label>paymentText<textarea id="readonlyPayment" rows="5" readonly></textarea></label>
-          <label>contactsText<textarea id="readonlyContacts" rows="5" readonly></textarea></label>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-head">
+      <section id="screen-publish" class="screen">
+        <div class="section-head">
           <h2>Публикация</h2>
         </div>
-        <div class="publish-actions">
-          <button id="downloadConfigBtn" type="button">Скачать config.json</button>
-          <button id="downloadCategoriesBtn" type="button">Скачать categories.json</button>
-          <button id="downloadProductsBtn" type="button">Скачать products.json</button>
-          <button id="sendToBotBtn" type="button" class="primary">Отправить пакет в бота</button>
+        <div class="publish-box">
+          <button id="downloadConfigBtn" class="btn" type="button">Скачать config.json</button>
+          <button id="downloadCategoriesBtn" class="btn" type="button">Скачать categories.json</button>
+          <button id="downloadProductsBtn" class="btn" type="button">Скачать products.json</button>
+          <button id="sendToBotBtn" class="btn primary" type="button">Отправить сводку в бота</button>
+          <p id="status" class="status"></p>
         </div>
-        <p id="status" class="status"></p>
       </section>
     </main>
 
+    <nav class="bottom-nav">
+      <button data-screen="home" class="bottom-item active" type="button">Главная</button>
+      <button data-screen="categories" class="bottom-item" type="button">Каталог</button>
+      <button data-screen="products" class="bottom-item" type="button">Товары</button>
+      <button data-screen="publish" class="bottom-item" type="button">Публикация</button>
+    </nav>
+
+    <div id="editorModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card">
+        <h3 id="editorTitle">Редактирование</h3>
+        <input id="editorInput" class="hidden" type="text" />
+        <textarea id="editorTextarea" class="hidden" rows="8"></textarea>
+        <div class="modal-actions">
+          <button id="editorCancel" class="btn ghost" type="button">Отмена</button>
+          <button id="editorSave" class="btn primary" type="button">Сохранить</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="admin.js?v=20260225-1"></script>
+    <script src="admin.js?v=20260225-2"></script>
   </body>
 </html>
